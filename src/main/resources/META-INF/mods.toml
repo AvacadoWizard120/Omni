@@ -28,7 +28,7 @@ displayName="${mod_name}" #mandatory
 # A URL for the "homepage" for this mod, displayed in the mod UI
 displayURL="https://youtube.com/@ConfusingFool93" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
-#logoFile="omni.png" #optional
+logoFile="Omni.png" #optional
 # A text field displayed in the mod UI
 #credits="Thanks for this example mod goes to Java" #optional
 # A text field displayed in the mod UI
