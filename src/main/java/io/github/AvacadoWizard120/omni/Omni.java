@@ -20,6 +20,8 @@ public class Omni {
     public static OmniConfig CONFIG;
     public static ModConfigSpec CONFIG_SPEC;
 
+    public static Double SPEED;
+
     public Omni(IEventBus modEventBus, ModContainer modContainer) {
         Pair<OmniConfig, ModConfigSpec> configPair = new ModConfigSpec.Builder().configure(OmniConfig::new);
         CONFIG = configPair.getLeft();
@@ -40,9 +42,13 @@ public class Omni {
                 double forward = 0;
                 double strafe = 0;
                 if (mc.options.keyUp.isDown()) forward++;
+                if (mc.options.keyUp.isDown()) SPEED = CONFIG.forwardMultiplier.get();
                 if (mc.options.keyDown.isDown()) forward--;
+                if (mc.options.keyDown.isDown()) SPEED = CONFIG.backwardMultiplier.get();
                 if (mc.options.keyLeft.isDown()) strafe++;
+                if (mc.options.keyLeft.isDown()) SPEED = CONFIG.leftMultiplier.get();
                 if (mc.options.keyRight.isDown()) strafe--;
+                if (mc.options.keyRight.isDown()) SPEED = CONFIG.rightMultiplier.get();
                 if (forward != 0 || strafe != 0) {
                     float inputMagnitude = (float) Math.sqrt(forward * forward + strafe * strafe);
                     forward /= inputMagnitude;
@@ -50,7 +56,7 @@ public class Omni {
                     float yaw = (float) Math.toRadians(player.getYRot());
                     double motionX = strafe * Math.cos(yaw) - forward * Math.sin(yaw);
                     double motionZ = forward * Math.cos(yaw) + strafe * Math.sin(yaw);
-                    Vec3 motion = new Vec3(motionX, 0, motionZ).normalize().scale(0.28);
+                    Vec3 motion = new Vec3(motionX, 0, motionZ).normalize().scale(SPEED);
                     player.setDeltaMovement(motion.x, player.getDeltaMovement().y, motion.z);
                 }
             }

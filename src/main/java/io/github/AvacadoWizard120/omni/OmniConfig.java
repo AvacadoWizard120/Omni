@@ -14,22 +14,22 @@ public class OmniConfig {
         forwardMultiplier = builder
                 .comment("Forward sprint speed multiplier")
                 .translation("omni.config.forward_multiplier")
-                .defineInRange("forward_multiplier", 2, 0, 99999.0);
+                .defineInRange("forward_multiplier", 0.28, 0, 99999.0);
 
         backwardMultiplier = builder
                 .comment("Backward sprint speed multiplier")
                 .translation("omni.config.backward_multiplier")
-                .defineInRange("backward_multiplier", 2, 0, 99999.0);
+                .defineInRange("backward_multiplier", 0.28, 0, 99999.0);
 
         leftMultiplier = builder
                 .comment("Left sprint speed multiplier")
                 .translation("omni.config.left_multiplier")
-                .defineInRange("left_multiplier", 2, 0, 99999.0);
+                .defineInRange("left_multiplier", 0.28, 0, 99999.0);
 
         rightMultiplier = builder
                 .comment("Right sprint speed multiplier")
                 .translation("omni.config.right_multiplier")
-                .defineInRange("right_multiplier", 1.3, 0, 99999.0);
+                .defineInRange("right_multiplier", 0.28, 0, 99999.0);
 
         builder.pop();
     }
