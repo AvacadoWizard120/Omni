@@ -7,19 +7,25 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import org.apache.commons.lang3.tuple.Pair;
 
-// The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(Omni.MODID)
-public class Omni
-{
-    private static final double SPRINT_SPEED = 0.28;
-
+public class Omni {
     public static final String MODID = "omni";
 
-    public Omni(IEventBus modEventBus, ModContainer modContainer)
-    {
+    public static OmniConfig CONFIG;
+    public static ModConfigSpec CONFIG_SPEC;
+
+    public Omni(IEventBus modEventBus, ModContainer modContainer) {
+        Pair<OmniConfig, ModConfigSpec> configPair = new ModConfigSpec.Builder().configure(OmniConfig::new);
+        CONFIG = configPair.getLeft();
+        CONFIG_SPEC = configPair.getRight();
+        modContainer.registerConfig(ModConfig.Type.CLIENT, CONFIG_SPEC);
+
         NeoForge.EVENT_BUS.register(this);
     }
 
@@ -44,7 +50,7 @@ public class Omni
                     float yaw = (float) Math.toRadians(player.getYRot());
                     double motionX = strafe * Math.cos(yaw) - forward * Math.sin(yaw);
                     double motionZ = forward * Math.cos(yaw) + strafe * Math.sin(yaw);
-                    Vec3 motion = new Vec3(motionX, 0, motionZ).normalize().scale(SPRINT_SPEED);
+                    Vec3 motion = new Vec3(motionX, 0, motionZ).normalize().scale(0.28);
                     player.setDeltaMovement(motion.x, player.getDeltaMovement().y, motion.z);
                 }
             }
