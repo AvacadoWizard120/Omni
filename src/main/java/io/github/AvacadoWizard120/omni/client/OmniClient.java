@@ -2,6 +2,7 @@ package io.github.AvacadoWizard120.omni.client;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
@@ -10,9 +11,12 @@ public class OmniClient implements ClientModInitializer {
 
     private static final double SPRINT_SPEED = 0.28;
 
+    private static boolean isShoulderSurfingLoaded;
+
     @Override
     public void onInitializeClient()
     {
+        isShoulderSurfingLoaded = FabricLoader.getInstance().isModLoaded("shouldersurfing");
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player != null && client.options.sprintKey.isPressed()) {
                 handleOmnidirectionalSprint(client, client.player);
@@ -20,23 +24,52 @@ public class OmniClient implements ClientModInitializer {
         });
     }
 
-    private void handleOmnidirectionalSprint(MinecraftClient client, PlayerEntity player) {
-        double forward = 0;
-        double strafe = 0;
-        if (client.options.forwardKey.isPressed()) forward++;
-        if (client.options.backKey.isPressed()) forward--;
-        if (client.options.leftKey.isPressed()) strafe++;
-        if (client.options.rightKey.isPressed()) strafe--;
+    static boolean isFirstPersonView()
+    {
+        MinecraftClient client = MinecraftClient.getInstance();
+        return client != null && client.options.getPerspective().isFirstPerson();
+    }
 
-        if (forward != 0 || strafe != 0) {
-            float inputMagnitude = (float) Math.sqrt(forward * forward + strafe * strafe);
-            forward /= inputMagnitude;
-            strafe /= inputMagnitude;
-            float yaw = (float) Math.toRadians(player.getYaw());
-            double motionX = strafe * Math.cos(yaw) - forward * Math.sin(yaw);
-            double motionZ = forward * Math.cos(yaw) + strafe * Math.sin(yaw);
-            Vec3d motion = new Vec3d(motionX, 0, motionZ).normalize().multiply(SPRINT_SPEED);
-            player.setVelocity(motion.x, player.getVelocity().y, motion.z);
+    private void handleOmnidirectionalSprint(MinecraftClient client, PlayerEntity player)
+    {
+        if (isShoulderSurfingLoaded && isFirstPersonView())
+        {
+            double forward = 0;
+            double strafe = 0;
+            if (client.options.forwardKey.isPressed()) forward++;
+            if (client.options.backKey.isPressed()) forward--;
+            if (client.options.leftKey.isPressed()) strafe++;
+            if (client.options.rightKey.isPressed()) strafe--;
+
+            if (forward != 0 || strafe != 0) {
+                float inputMagnitude = (float) Math.sqrt(forward * forward + strafe * strafe);
+                forward /= inputMagnitude;
+                strafe /= inputMagnitude;
+                float yaw = (float) Math.toRadians(player.getYaw());
+                double motionX = strafe * Math.cos(yaw) - forward * Math.sin(yaw);
+                double motionZ = forward * Math.cos(yaw) + strafe * Math.sin(yaw);
+                Vec3d motion = new Vec3d(motionX, 0, motionZ).normalize().multiply(SPRINT_SPEED);
+                player.setVelocity(motion.x, player.getVelocity().y, motion.z);
+            }
+        } else if (!isShoulderSurfingLoaded)
+        {
+            double forward = 0;
+            double strafe = 0;
+            if (client.options.forwardKey.isPressed()) forward++;
+            if (client.options.backKey.isPressed()) forward--;
+            if (client.options.leftKey.isPressed()) strafe++;
+            if (client.options.rightKey.isPressed()) strafe--;
+
+            if (forward != 0 || strafe != 0) {
+                float inputMagnitude = (float) Math.sqrt(forward * forward + strafe * strafe);
+                forward /= inputMagnitude;
+                strafe /= inputMagnitude;
+                float yaw = (float) Math.toRadians(player.getYaw());
+                double motionX = strafe * Math.cos(yaw) - forward * Math.sin(yaw);
+                double motionZ = forward * Math.cos(yaw) + strafe * Math.sin(yaw);
+                Vec3d motion = new Vec3d(motionX, 0, motionZ).normalize().multiply(SPRINT_SPEED);
+                player.setVelocity(motion.x, player.getVelocity().y, motion.z);
+            }
         }
     }
 }
