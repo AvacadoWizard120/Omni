@@ -31,9 +31,13 @@ public class OmnioverhaulClient implements ClientModInitializer {
 
         // Register the client tick event
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.player != null && sprintKey.isPressed() && (client.player.forwardSpeed != 0 || client.player.sidewaysSpeed != 0)) {
-                // Apply omnidirectional sprint
-                Omnioverhaul.applyOmnidirectionalSprint(client.player);
+            if (client.player != null && sprintKey.isPressed() && (client.player.forwardSpeed != 0 || client.player.sidewaysSpeed != 0))
+            {
+                if (!client.player.isSprinting())
+                {
+                    // Apply omnidirectional sprint
+                    Omnioverhaul.applyOmnidirectionalSprint(client.player);
+                }
             }
         });
 

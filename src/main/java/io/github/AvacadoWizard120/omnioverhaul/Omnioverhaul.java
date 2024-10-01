@@ -12,18 +12,17 @@ public class Omnioverhaul implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        // Load server config
         ServerConfigHandler.loadConfig();
 
-        // Server-side initialization
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            // Send mod presence and config to client when they join
             OmnidirectionalSprintNetwork.sendModPresence(handler.player);
         });
     }
 
-    public static void applyOmnidirectionalSprint(PlayerEntity player) {
-        if (player.getWorld().isClient && !OmnidirectionalSprintNetwork.isServerModded()) {
+    public static void applyOmnidirectionalSprint(PlayerEntity player)
+    {
+        if (player.getWorld().isClient && !OmnidirectionalSprintNetwork.isServerModded())
+        {
             // Don't apply sprint on multiplayer servers without the mod
             return;
         }
