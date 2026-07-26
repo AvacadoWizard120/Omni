@@ -1,0 +1,16 @@
+.gradle/
+.tmp/
+build/
+run/
+out/
+.idea/
+.agents/
+.codex/
+__pycache__/
+*.py[cod]
+*.iml
+versions/*/build/
+curseforge-publish.local.json
+.curseforge-publish-state.json
+modrinth-publish.local.json
+.modrinth-publish-state.json

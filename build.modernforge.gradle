@@ -1,0 +1,133 @@
+plugins {
+    id 'net.minecraftforge.gradle'
+}
+
+def prop = { name -> project.property(name).toString() }
+
+def minecraftVersion = prop('deps.minecraft')
+def modId = prop('mod.id')
+def modName = prop('mod.name')
+def modVersion = prop('mod.version')
+def modGroup = prop('mod.group')
+def modDescription = prop('mod.description')
+def modAuthor = prop('mod.author')
+def modSources = prop('mod.sources')
+def modIssues = prop('mod.issues')
+def modHomepage = prop('mod.homepage')
+def modLicense = prop('mod.license')
+def modIcon = prop('mod.icon')
+def versionRange = prop('version_range')
+def javaVersion = prop('java_version') as int
+def compilerJavaVersion = javaVersion == 16 ? 17 : javaVersion
+def mixinCompatibilityLevel = prop('mixin_compatibility_level')
+
+group = modGroup
+base.archivesName = modId
+version = "${modVersion}+${minecraftVersion}-forge"
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(compilerJavaVersion)
+    sourceCompatibility = JavaVersion.toVersion(javaVersion)
+    targetCompatibility = JavaVersion.toVersion(javaVersion)
+    withSourcesJar()
+}
+
+minecraft {
+    mappings channel: 'official', version: minecraftVersion
+
+    runs {
+        configureEach {
+            workingDir = project.file('run/')
+
+            mods {
+                "${modId}" {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {}
+        server {
+            args '--nogui'
+        }
+    }
+}
+
+sourceSets {
+    main {
+        if (minecraftVersion == '1.14.4') {
+            java.srcDir rootProject.file('src/forge114/java')
+            resources.srcDir rootProject.file('src/forge114/resources')
+        }
+    }
+}
+
+repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    mavenCentral()
+}
+
+dependencies {
+    implementation minecraft.dependency("net.minecraftforge:forge:${prop('deps.forge')}")
+    compileOnly 'org.spongepowered:mixin:0.8.5'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+tasks.named('compileJava', JavaCompile).configure {
+    dependsOn tasks.named('stonecutterGenerate')
+    options.encoding = 'UTF-8'
+    if (javaVersion >= 9) {
+        options.release = javaVersion
+    }
+    doFirst {
+        def mixinDir = layout.buildDirectory.dir('mixin').get().asFile
+        def refmap = new File(mixinDir, "${modId}.refmap.json")
+        mixinDir.mkdirs()
+        refmap.text = '{}'
+    }
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    dependsOn tasks.named('stonecutterGenerate')
+
+    def props = [
+        mod_id: modId,
+        mod_name: modName,
+        mod_version: modVersion,
+        mod_description: modDescription,
+        mod_author: modAuthor,
+        mod_sources: modSources,
+        mod_issues: modIssues,
+        mod_homepage: modHomepage,
+        mod_license: modLicense,
+        mod_icon: modIcon,
+        minecraft_version: minecraftVersion,
+        version_range: versionRange,
+        loader_version_range: prop('loader_version_range'),
+        forge_version_range: prop('forge_version_range'),
+        mixin_compatibility_level: mixinCompatibilityLevel
+    ]
+
+    inputs.properties(props)
+    filesMatching(['META-INF/mods.toml', "${modId}.mixins.json".toString()]) {
+        expand props
+    }
+    exclude 'fabric.mod.json', 'quilt.mod.json', 'META-INF/neoforge.mods.toml'
+}
+
+tasks.named('jar', Jar).configure {
+    from layout.buildDirectory.file("mixin/${modId}.refmap.json")
+    manifest {
+        attributes 'MixinConfigs': "${modId}.mixins.json"
+    }
+}
+
+tasks.register('buildAndCollect', Copy) {
+    group = 'build'
+    dependsOn tasks.named('build')
+    from tasks.named('jar', Jar).flatMap { it.archiveFile }
+    into rootProject.layout.buildDirectory.dir("libs/${modVersion}")
+}

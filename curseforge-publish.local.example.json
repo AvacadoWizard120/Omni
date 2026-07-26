@@ -1,0 +1,11 @@
+{
+  "project_id": 123456,
+  "token_env": "CURSEFORGE_API_TOKEN",
+  "release_type": "release",
+  "changelog_type": "markdown",
+  "skip_existing": true,
+  "skip_existing_pairs": false,
+  "changelog": "Adds tested support for additional Minecraft versions and loaders while preserving Omni's existing omni-directional sprint behavior.",
+  "release_dir": "build/libs/1.2-OVERHAUL",
+  "display_name_template": "[{loader_upper}] Omni 1.2-OVERHAUL"
+}

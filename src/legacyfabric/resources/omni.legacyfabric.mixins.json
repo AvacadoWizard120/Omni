@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.avacadowizard120.omni.legacyfabric.mixin",
+  "compatibilityLevel": "${mixin_compatibility_level}",
+  "client": [
+    "${sprint_mixin}",
+    "${command_mixin}",
+    "${jump_mixin}",
+    "${movement_mixin}"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

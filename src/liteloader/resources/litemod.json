@@ -1,0 +1,10 @@
+{
+  "name": "${mod_name}",
+  "mcversion": "${minecraft_version}",
+  "version": "${mod_version}",
+  "revision": 1,
+  "author": "${mod_author}",
+  "description": "${mod_description}",
+  "url": "${mod_homepage}",
+  "classTransformerClasses": "io.github.avacadowizard120.omni.liteloader.OmniLiteTransformer"
+}
