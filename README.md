@@ -37,7 +37,7 @@ In game, use:
 /omni reload
 ```
 
-The config is intentionally plain:
+Default `config/omni.properties`:
 
 ```properties
 enabled=true
