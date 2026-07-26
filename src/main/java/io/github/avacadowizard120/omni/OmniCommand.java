@@ -29,34 +29,35 @@ public final class OmniCommand {
 
         if ("enable".equals(action) || "enabled".equals(action) || "on".equals(action) || "true".equals(action)) {
             OmniConfig.setEnabled(true);
-            feedback("Omni is enabled.");
+            feedback("Enabled.");
             return true;
         }
 
         if ("disable".equals(action) || "disabled".equals(action) || "off".equals(action) || "false".equals(action)) {
             OmniConfig.setEnabled(false);
-            feedback("Omni is disabled.");
+            feedback("Disabled.");
             return true;
         }
 
         if ("reload".equals(action)) {
             OmniConfig.reload();
-            feedback("Omni config reloaded. Omni is " + OmniConfig.statusText() + ".");
+            feedback("Config reloaded. Status: " + OmniConfig.statusText() + ".");
             return true;
         }
 
         if ("status".equals(action)) {
-            feedback("Omni is " + OmniConfig.statusText() + ".");
+            feedback("Status: " + OmniConfig.statusText() + ".");
             return true;
         }
 
-        feedback("Usage: /omni enable, /omni disable, /omni status, /omni reload");
+        feedback("Usage: /omni [enable|disable|status|reload]");
         return true;
     }
 
     private static void feedback(String message) {
-        if (!sendInGameMessage(message)) {
-            System.out.println("[Omni] " + message);
+        String formatted = "[Omni] " + message;
+        if (!sendInGameMessage(formatted)) {
+            System.out.println(formatted);
         }
     }
 

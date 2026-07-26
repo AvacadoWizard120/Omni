@@ -375,7 +375,7 @@ def main():
     parser.add_argument("--changelog-file", type=Path)
     parser.add_argument("--version-type", choices=["release", "beta", "alpha"])
     parser.add_argument("--requested-status", choices=["listed", "archived", "draft", "unlisted"])
-    parser.add_argument("--upload", action="store_true", help="Actually upload files. Omit for dry-run.")
+    parser.add_argument("--upload", action="store_true", help="Upload files; omit for a dry run.")
     parser.add_argument("--validate-tags", action="store_true", help="Validate loader and game version tags against Modrinth.")
     parser.add_argument("--no-skip-existing", action="store_true", help="Do not skip already published version numbers or file hashes.")
     parser.add_argument("--skip-existing-pairs", action="store_true", help="Also skip any artifact whose loader/Minecraft pair already exists.")
@@ -431,7 +431,7 @@ def main():
         if errors:
             for error in errors:
                 print(error, file=sys.stderr)
-            print("Modrinth rejects unknown loader or game version tags, so upload was not started.", file=sys.stderr)
+            print("Upload canceled: Modrinth does not recognize one or more loader or game-version tags.", file=sys.stderr)
             return 1
         print("Modrinth loader/game version tags validated.")
 

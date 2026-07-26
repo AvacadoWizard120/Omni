@@ -39,25 +39,25 @@ public final class OmniLiteHooks {
 
         if ("enable".equals(action) || "enabled".equals(action) || "on".equals(action) || "true".equals(action)) {
             OmniConfig.setEnabled(true);
-            System.out.println("[Omni] Omni is enabled.");
+            System.out.println("[Omni] Enabled.");
             return true;
         }
         if ("disable".equals(action) || "disabled".equals(action) || "off".equals(action) || "false".equals(action)) {
             OmniConfig.setEnabled(false);
-            System.out.println("[Omni] Omni is disabled.");
+            System.out.println("[Omni] Disabled.");
             return true;
         }
         if ("reload".equals(action)) {
             OmniConfig.reload();
-            System.out.println("[Omni] Omni config reloaded. Omni is " + OmniConfig.statusText() + ".");
+            System.out.println("[Omni] Config reloaded. Status: " + OmniConfig.statusText() + ".");
             return true;
         }
         if ("status".equals(action)) {
-            System.out.println("[Omni] Omni is " + OmniConfig.statusText() + ".");
+            System.out.println("[Omni] Status: " + OmniConfig.statusText() + ".");
             return true;
         }
 
-        System.out.println("[Omni] Usage: /omni enable, /omni disable, /omni status, /omni reload");
+        System.out.println("[Omni] Usage: /omni [enable|disable|status|reload]");
         return true;
     }
 

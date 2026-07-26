@@ -268,7 +268,7 @@ def main():
     parser.add_argument("--limit", type=int, help="Run at most this many filtered targets.")
     parser.add_argument("--resume", action="store_true", help="Skip targets marked ok in the latest results file.")
     parser.add_argument("--try-unlaunchable", action="store_true", help="Try targets that are known not to expose runClient.")
-    parser.add_argument("--continue-on-failure", action="store_true", help="Keep going after a non-accepted exit code.")
+    parser.add_argument("--continue-on-failure", action="store_true", help="Keep going when a run returns an exit code not listed by --ok-exit-code.")
     parser.add_argument("--dry-run", action="store_true", help="Print the queue without launching Minecraft.")
     parser.add_argument("--ok-exit-code", type=int, action="append", default=[0], help="Accepted exit code. Repeat to add more.")
     parser.add_argument("--delay", type=float, default=0.0, help="Seconds to wait between successful runs.")
@@ -332,7 +332,7 @@ def main():
             if result["status"] != "ok":
                 exit_status = 1
                 if not args.continue_on_failure:
-                    print("Stopping because the last run did not exit with an accepted code.", flush=True)
+                    print("Exit code was not accepted; stopping.", flush=True)
                     break
             elif args.delay > 0 and index < len(run_queue):
                 time.sleep(args.delay)

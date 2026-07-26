@@ -26,20 +26,20 @@ public final class LegacyOmniCommand {
 
         if ("enable".equals(action) || "enabled".equals(action) || "on".equals(action) || "true".equals(action)) {
             OmniConfig.setEnabled(true);
-            return "Omni is enabled.";
+            return "Enabled.";
         }
         if ("disable".equals(action) || "disabled".equals(action) || "off".equals(action) || "false".equals(action)) {
             OmniConfig.setEnabled(false);
-            return "Omni is disabled.";
+            return "Disabled.";
         }
         if ("reload".equals(action)) {
             OmniConfig.reload();
-            return "Omni config reloaded. Omni is " + OmniConfig.statusText() + ".";
+            return "Config reloaded. Status: " + OmniConfig.statusText() + ".";
         }
         if ("status".equals(action)) {
-            return "Omni is " + OmniConfig.statusText() + ".";
+            return "Status: " + OmniConfig.statusText() + ".";
         }
 
-        return "Usage: /omni enable, /omni disable, /omni status, /omni reload";
+        return "Usage: /omni [enable|disable|status|reload]";
     }
 }

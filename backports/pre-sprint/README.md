@@ -1,18 +1,15 @@
-# Deferred Pre-Sprint Research Lane
+# Pre-Sprint Versions
 
 Minecraft Beta 1.8 introduced sprinting. Versions before that do not have a
-vanilla sprint mechanic to redirect, so they should not be treated as ordinary
-Omni backports.
+vanilla sprint mechanic for Omni to modify.
 
-This lane is parked until the sprint-era backports are in good shape.
+Work on these versions is deferred until the sprint-era backports are complete.
 
-There are two possible product promises:
+## Options
 
-- Conservative: Omni supports every moddable Java Edition where vanilla sprint
-  exists, and older versions are out of scope.
-- Museum mode: Omni also adds a sprint-like mechanic to pre-sprint versions, with
-  config defaults chosen to feel historically respectful.
+- Standard support: target moddable Java Edition versions with vanilla sprint.
+- Museum mode: publish separate artifacts that add sprint to pre-sprint
+  versions, with defaults chosen for each target.
 
-The conservative path is safer for the main mod identity. Museum mode is a cool
-separate artifact, but it should be labeled clearly because it changes gameplay
-more than modern Omni does.
+Museum artifacts must be labeled as such because they add sprint instead of
+modifying vanilla sprint.

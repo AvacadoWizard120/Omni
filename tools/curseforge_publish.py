@@ -374,7 +374,7 @@ def public_plan(plan, config):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Dry-run or upload Omni jars to CurseForge.")
+    parser = argparse.ArgumentParser(description="Dry-run or upload Omni artifacts to CurseForge.")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--release-dir", type=Path)
     parser.add_argument("--project-id")
@@ -383,11 +383,11 @@ def main():
     parser.add_argument("--changelog")
     parser.add_argument("--changelog-file", type=Path)
     parser.add_argument("--release-type", choices=["release", "beta", "alpha"])
-    parser.add_argument("--upload", action="store_true", help="Actually upload files. Omit for dry-run.")
+    parser.add_argument("--upload", action="store_true", help="Upload files; omit for a dry run.")
     parser.add_argument("--validate", action="store_true", help="Resolve CurseForge IDs using the tokened author API.")
     parser.add_argument("--no-skip-existing", action="store_true", help="Do not skip already published file names or prior local successes.")
     parser.add_argument("--skip-existing-pairs", action="store_true", help="Also skip any artifact whose loader/Minecraft pair already exists.")
-    parser.add_argument("--only", action="append", default=[], help="Substring filter for jar filenames.")
+    parser.add_argument("--only", action="append", default=[], help="Substring filter for artifact filenames.")
     args = parser.parse_args()
 
     config = load_json(args.config)
@@ -415,7 +415,7 @@ def main():
         plan = [item for item in plan if any(part in item["file_name"] for part in args.only)]
 
     if not plan:
-        print(f"No publishable Omni jars found in {release_dir}", file=sys.stderr)
+        print(f"No publishable Omni artifacts found in {release_dir}", file=sys.stderr)
         return 1
 
     changelog = config.get("changelog", "").strip()
@@ -451,7 +451,7 @@ def main():
         plan = [item for item in plan if item["file_name"] not in previous_successes]
         skipped = before - len(plan)
         if skipped:
-            print(f"Skipped {skipped} CurseForge file(s) already marked successful in prior local results.")
+            print(f"Skipped {skipped} CurseForge file(s) listed as successful in the local results file.")
 
     if args.upload or args.validate:
         if not token:

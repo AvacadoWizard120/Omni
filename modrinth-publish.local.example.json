@@ -7,7 +7,7 @@
   "environment": "client_only",
   "skip_existing": true,
   "skip_existing_pairs": false,
-  "changelog": "Adds tested support for additional Minecraft versions and loaders while preserving Omni's existing omni-directional sprint behavior.",
+  "changelog": "Adds support for more Minecraft versions and mod loaders.",
   "release_dir": "build/libs/1.2-OVERHAUL",
   "name_template": "[{loader_upper}] Omni {release} for Minecraft {minecraft}",
   "version_number_template": "{release}+{minecraft}-{loader}"

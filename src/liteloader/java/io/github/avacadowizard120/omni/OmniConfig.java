@@ -194,16 +194,14 @@ public final class OmniConfig {
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(CONFIG_FILE), StandardCharsets.UTF_8))) {
             writer.write("# Omni config");
             writer.newLine();
-            writer.write("# enabled=false turns Omni's movement changes off.");
+            writer.write("# Set enabled=false to disable Omni.");
             writer.newLine();
             writer.write("enabled=" + enabled);
             writer.newLine();
             writer.newLine();
-            writer.write("# Multipliers are relative to vanilla sprint speed.");
+            writer.write("# Sprint-speed multipliers: 1.0 = vanilla, 0.5 = half, 2.0 = double.");
             writer.newLine();
-            writer.write("# 1.0 is unchanged, 0.5 is half speed, 2.0 is double speed.");
-            writer.newLine();
-            writer.write("# There is no upper cap; extreme values can be difficult to control.");
+            writer.write("# No upper limit; high values may be hard to control.");
             writer.newLine();
             writer.write("forward_multiplier=" + format(forwardMultiplier));
             writer.newLine();
