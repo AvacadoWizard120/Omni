@@ -130,17 +130,12 @@ Run one target in dev:
   `--ok-exit-code -1` to `tools/run_client_matrix.py` if a launcher reports that
   as its normal close code.
 
-## Loader gaps
+## Unsupported versions
 
-- Old-version work lives under `backports/`. Legacy Fabric 1.7.9 is omitted
-  because it has no published mappings or loader metadata. Collection requires
-  compilation and bytecode checks for each mapping set.
-- Fabric 1.14 through 1.14.3 need Yarn/intermediary mappings because official
-  Mojang mappings are not available there.
-- Forge 1.14.4, 1.15.x, and 1.16.2 through 1.16.5 use the
-  pre-1.17 package gates in the shared source. Forge 1.13.x and 1.16.1 remain
-  outside the release matrix until their build tooling works reliably.
-- Forge has no releases for Minecraft 1.20.5 or 1.21.2. Forge 26.1 exists, but
-  currently fails during Forge's own FieldToMethodTransformer bootstrap.
-- Possible loaders from Modrinth's list: Babric, BTA (Babric),
-  Ornithe, NilLoader, Rift, Risugami's ModLoader, and Java Agent.
+- Legacy Fabric 1.7.9: no published mappings or loader metadata.
+- Fabric 1.14 through 1.14.3: the current build requires Mojang mappings, which
+  do not exist for these versions.
+- Forge 1.13.2, 1.14.2, 1.14.3, and 1.16.1: the current ForgeGradle setup cannot
+  build them.
+- Forge 1.20.5 and 1.21.2: Forge did not release for these versions.
+- Forge 26.1: Forge's FieldToMethodTransformer fails during setup.
