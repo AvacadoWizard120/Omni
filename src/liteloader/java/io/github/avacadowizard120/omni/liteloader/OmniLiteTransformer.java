@@ -1,8 +1,5 @@
 package io.github.avacadowizard120.omni.liteloader;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -22,14 +19,7 @@ import org.objectweb.asm.tree.VarInsnNode;
 
 public final class OmniLiteTransformer implements IClassTransformer {
     private static final String HOOKS = "io/github/avacadowizard120/omni/liteloader/OmniLiteHooks";
-    private static final Set<String> PLAYER_CLASSES = names("net.minecraft.client.entity.EntityPlayerSP", "bud");
-    private static final Set<String> LIVING_CLASSES = names("net.minecraft.entity.EntityLivingBase", "pr", "vp");
-    private static final Set<String> ON_LIVING_UPDATE = names("onLivingUpdate", "func_70636_d", "n");
-    private static final Set<String> SEND_CHAT_MESSAGE = names("sendChatMessage", "func_71165_d", "g");
-    private static final Set<String> JUMP = names("jump", "func_70664_aZ", "cu");
-    private static final Set<String> INPUT_FIELDS = names("movementInput", "field_71158_b", "e");
-    private static final Set<String> FORWARD_FIELDS = names("moveForward", "field_192832_b", "b");
-    private static final Set<String> SPRINTING_METHODS = names("isSprinting", "func_70051_ag", "aV");
+    private static final OmniLiteMappings.Mapping MAPPING = OmniLiteMappings.CURRENT;
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
@@ -37,16 +27,34 @@ public final class OmniLiteTransformer implements IClassTransformer {
             return null;
         }
 
-        if (matchesClass(name, transformedName, PLAYER_CLASSES)) {
-            return transformClass(basicClass, true, false);
+        boolean patchPlayer = matchesClass(
+                name,
+                transformedName,
+                "net.minecraft.client.entity.EntityPlayerSP",
+                MAPPING.playerClass
+        );
+        boolean chatLivesOnPlayer = MAPPING.chatClass == null || MAPPING.chatClass.equals(MAPPING.playerClass);
+        boolean patchChat = (patchPlayer && chatLivesOnPlayer) || matchesClass(
+                name,
+                transformedName,
+                "net.minecraft.client.entity.EntityClientPlayerMP",
+                MAPPING.chatClass
+        );
+        if (patchPlayer || patchChat) {
+            return transformClass(basicClass, patchPlayer, patchChat, false);
         }
-        if (matchesClass(name, transformedName, LIVING_CLASSES)) {
-            return transformClass(basicClass, false, true);
+        if (matchesClass(name, transformedName, "net.minecraft.entity.EntityLivingBase", MAPPING.livingClass)) {
+            return transformClass(basicClass, false, false, true);
         }
         return basicClass;
     }
 
-    private static byte[] transformClass(byte[] basicClass, boolean patchPlayer, boolean patchLiving) {
+    private static byte[] transformClass(
+            byte[] basicClass,
+            boolean patchPlayer,
+            boolean patchChat,
+            boolean patchLiving
+    ) {
         ClassReader reader = new ClassReader(basicClass);
         ClassNode classNode = new ClassNode();
         reader.accept(classNode, 0);
@@ -56,17 +64,24 @@ public final class OmniLiteTransformer implements IClassTransformer {
         int commandPatches = 0;
         int jumpPatches = 0;
         int movementPatches = 0;
-        for (MethodNode method : classNode.methods) {
-            if (patchPlayer && "()V".equals(method.desc) && ON_LIVING_UPDATE.contains(method.name)) {
+        for (Object methodObject : classNode.methods) {
+            MethodNode method = (MethodNode) methodObject;
+            if (patchPlayer
+                    && "()V".equals(method.desc)
+                    && matchesName(method.name, "onLivingUpdate", "func_70636_d", MAPPING.livingUpdateMethod)) {
                 int patched = patchDirectionalImpulseChecks(method);
                 directionalPatches += patched;
                 changed |= patched > 0;
             }
-            if (patchPlayer && "(Ljava/lang/String;)V".equals(method.desc) && SEND_CHAT_MESSAGE.contains(method.name)) {
+            if (patchChat
+                    && "(Ljava/lang/String;)V".equals(method.desc)
+                    && matchesName(method.name, "sendChatMessage", "func_71165_d", MAPPING.chatMethod)) {
                 changed |= patchCommand(method);
                 commandPatches++;
             }
-            if (patchLiving && "()V".equals(method.desc) && JUMP.contains(method.name)) {
+            if (patchLiving
+                    && "()V".equals(method.desc)
+                    && matchesName(method.name, "jump", "func_70664_aZ", MAPPING.jumpMethod)) {
                 if (patchSprintJump(method)) {
                     jumpPatches++;
                     changed = true;
@@ -127,8 +142,7 @@ public final class OmniLiteTransformer implements IClassTransformer {
                             Opcodes.INVOKESTATIC,
                             HOOKS,
                             "hasDirectionalImpulse",
-                            "(Ljava/lang/Object;Ljava/lang/String;F)Z",
-                            false
+                            "(Ljava/lang/Object;Ljava/lang/String;F)Z"
                     ));
                     replacement.add(new JumpInsnNode(Opcodes.IFEQ, oldJump.label));
 
@@ -167,8 +181,7 @@ public final class OmniLiteTransformer implements IClassTransformer {
                     Opcodes.INVOKESTATIC,
                     HOOKS,
                     "directionalSpeedMultiplier",
-                    "(Ljava/lang/Object;FF)F",
-                    false
+                    "(Ljava/lang/Object;FF)F"
             ));
             multiplier.add(new org.objectweb.asm.tree.InsnNode(Opcodes.FMUL));
             method.instructions.insertBefore(call, multiplier);
@@ -185,8 +198,7 @@ public final class OmniLiteTransformer implements IClassTransformer {
                 Opcodes.INVOKESTATIC,
                 HOOKS,
                 "handleCommand",
-                "(Ljava/lang/String;)Z",
-                false
+                "(Ljava/lang/String;)Z"
         ));
         guard.add(new JumpInsnNode(Opcodes.IFEQ, continueChat));
         guard.add(new org.objectweb.asm.tree.InsnNode(Opcodes.RETURN));
@@ -221,8 +233,7 @@ public final class OmniLiteTransformer implements IClassTransformer {
                     Opcodes.INVOKESTATIC,
                     HOOKS,
                     "applyDirectionalSprintJump",
-                    "(Ljava/lang/Object;)V",
-                    false
+                    "(Ljava/lang/Object;)V"
             ));
             replaceRange(method.instructions, bodyStart, bodyEnd, replacement);
             return true;
@@ -239,9 +250,9 @@ public final class OmniLiteTransformer implements IClassTransformer {
         for (AbstractInsnNode cursor = start; cursor != null; cursor = cursor.getNext()) {
             if (cursor instanceof FieldInsnNode) {
                 FieldInsnNode field = (FieldInsnNode) cursor;
-                sawMotionX |= "motionX".equals(field.name) || "field_70159_w".equals(field.name) || "s".equals(field.name);
-                sawMotionZ |= "motionZ".equals(field.name) || "field_70179_y".equals(field.name) || "u".equals(field.name);
-                sawYaw |= "rotationYaw".equals(field.name) || "field_70177_z".equals(field.name) || "v".equals(field.name);
+                sawMotionX |= matchesName(field.name, "motionX", "field_70159_w", MAPPING.motionXField);
+                sawMotionZ |= matchesName(field.name, "motionZ", "field_70179_y", MAPPING.motionZField);
+                sawYaw |= matchesName(field.name, "rotationYaw", "field_70177_z", MAPPING.yawField);
                 if (field.getOpcode() == Opcodes.PUTFIELD && "D".equals(field.desc)) {
                     doubleFieldWrites++;
                 }
@@ -258,7 +269,8 @@ public final class OmniLiteTransformer implements IClassTransformer {
 
     private static boolean isSprintCheckCandidate(MethodInsnNode call) {
         return "()Z".equals(call.desc)
-                && (SPRINTING_METHODS.contains(call.name) || call.getOpcode() == Opcodes.INVOKEVIRTUAL);
+                && (matchesName(call.name, "isSprinting", "func_70051_ag", MAPPING.sprintingMethod)
+                || call.getOpcode() == Opcodes.INVOKEVIRTUAL);
     }
 
     private static void replaceRange(InsnList instructions, AbstractInsnNode start, AbstractInsnNode end, InsnList replacement) {
@@ -305,7 +317,8 @@ public final class OmniLiteTransformer implements IClassTransformer {
     }
 
     private static boolean isInputField(FieldInsnNode field) {
-        return INPUT_FIELDS.contains(field.name) || (field.desc != null && field.desc.startsWith("L"));
+        return matchesName(field.name, "movementInput", "field_71158_b", MAPPING.inputField)
+                || (field.desc != null && field.desc.startsWith("L"));
     }
 
     private static boolean isThreshold(AbstractInsnNode insn, float value) {
@@ -323,11 +336,19 @@ public final class OmniLiteTransformer implements IClassTransformer {
         return insn instanceof JumpInsnNode && insn.getOpcode() == opcode;
     }
 
-    private static boolean matchesClass(String name, String transformedName, Set<String> classNames) {
-        return classNames.contains(name) || classNames.contains(transformedName);
+    private static boolean matchesClass(String name, String transformedName, String named, String obfuscated) {
+        return matchesClassName(name, named, obfuscated) || matchesClassName(transformedName, named, obfuscated);
     }
 
-    private static Set<String> names(String... values) {
-        return new HashSet<String>(Arrays.asList(values));
+    private static boolean matchesClassName(String actual, String named, String obfuscated) {
+        return actual != null && (actual.equals(named)
+                || actual.replace('/', '.').equals(named)
+                || (obfuscated != null && actual.equals(obfuscated)));
+    }
+
+    private static boolean matchesName(String actual, String named, String stable, String obfuscated) {
+        return actual != null && (actual.equals(named)
+                || actual.equals(stable)
+                || (obfuscated != null && actual.equals(obfuscated)));
     }
 }

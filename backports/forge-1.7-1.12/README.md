@@ -1,7 +1,7 @@
 # Forge 1.7-1.12 Backports
 
-The root build ships a LaunchWrapper transformer for Forge 1.8 through 1.12.2,
-plus the 1.12.2 LiteLoader artifact. Forge 1.7.10 remains planned.
+The root build ships a LaunchWrapper transformer for Forge 1.8 through 1.12.2
+and the supported LiteLoader versions. Forge 1.7.10 remains planned.
 
 ## Candidate Loaders
 

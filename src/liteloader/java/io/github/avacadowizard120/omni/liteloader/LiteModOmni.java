@@ -14,6 +14,9 @@ public final class LiteModOmni implements LiteMod {
         return "1.2-OVERHAUL";
     }
 
+    public void init() {
+    }
+
     @Override
     public void init(File configPath) {
     }

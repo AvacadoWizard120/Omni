@@ -8,13 +8,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class OmniLiteHooks {
-    private static final String[] INPUT_FIELDS = {"movementInput", "field_71158_b", "e"};
-    private static final String[] FORWARD_FIELDS = {"moveForward", "field_192832_b", "field_78900_b", "b"};
-    private static final String[] STRAFE_FIELDS = {"moveStrafe", "field_78902_a", "a"};
-    private static final String[] MOTION_X_FIELDS = {"motionX", "field_70159_w", "s"};
-    private static final String[] MOTION_Z_FIELDS = {"motionZ", "field_70179_y", "u"};
-    private static final String[] YAW_FIELDS = {"rotationYaw", "field_70177_z", "v"};
-    private static final String[] SPRINTING_METHODS = {"isSprinting", "func_70051_ag", "aw", "aV"};
+    private static final OmniLiteMappings.Mapping MAPPING = OmniLiteMappings.CURRENT;
+    private static final String[] INPUT_FIELDS = names(MAPPING.inputField, "movementInput", "field_71158_b");
+    private static final String[] FORWARD_FIELDS = names("b", "moveForward", "field_192832_b", "field_78900_b");
+    private static final String[] STRAFE_FIELDS = names("a", "moveStrafe", "field_78902_a");
+    private static final String[] MOTION_X_FIELDS = names(MAPPING.motionXField, "motionX", "field_70159_w");
+    private static final String[] MOTION_Z_FIELDS = names(MAPPING.motionZField, "motionZ", "field_70179_y");
+    private static final String[] YAW_FIELDS = names(MAPPING.yawField, "rotationYaw", "field_70177_z");
+    private static final String[] SPRINTING_METHODS = names(MAPPING.sprintingMethod, "isSprinting", "func_70051_ag");
     private static final Map<String, Field> FIELDS = new ConcurrentHashMap<String, Field>();
     private static final Map<String, Method> METHODS = new ConcurrentHashMap<String, Method>();
 
@@ -111,8 +112,14 @@ public final class OmniLiteHooks {
             return;
         }
 
+        if (!OmniConfig.isEnabled()) {
+            applyVanillaSprintJump(entity);
+            return;
+        }
+
         Object input = readMovementInputObject(entity);
         if (input == null) {
+            applyVanillaSprintJump(entity);
             return;
         }
 
@@ -121,6 +128,7 @@ public final class OmniLiteHooks {
         float forward = movement.forward;
         double lengthSqr = (double) side * (double) side + (double) forward * (double) forward;
         if (lengthSqr < 1.0E-7D) {
+            applyVanillaSprintJump(entity);
             return;
         }
 
@@ -133,23 +141,24 @@ public final class OmniLiteHooks {
         float yawRad = readFloat(entity, YAW_FIELDS) * ((float) Math.PI / 180.0F);
         double sin = Math.sin(yawRad);
         double cos = Math.cos(yawRad);
-        double multiplier = OmniConfig.isEnabled() ? (double) OmniConfig.directionMultiplier(forward, side) : 1.0D;
-        double boostX;
-        double boostZ;
-        if (OmniConfig.isEnabled()) {
-            boostX = ((double) side * cos - (double) forward * sin) * 0.2D * multiplier;
-            boostZ = ((double) forward * cos + (double) side * sin) * 0.2D * multiplier;
-        } else {
-            boostX = (double) (-Math.sin(yawRad) * 0.2F);
-            boostZ = (double) (Math.cos(yawRad) * 0.2F);
-        }
+        double multiplier = (double) OmniConfig.directionMultiplier(forward, side);
+        double boostX = ((double) side * cos - (double) forward * sin) * 0.2D * multiplier;
+        double boostZ = ((double) forward * cos + (double) side * sin) * 0.2D * multiplier;
 
         writeDouble(entity, MOTION_X_FIELDS, readDouble(entity, MOTION_X_FIELDS) + boostX);
         writeDouble(entity, MOTION_Z_FIELDS, readDouble(entity, MOTION_Z_FIELDS) + boostZ);
     }
 
+    private static void applyVanillaSprintJump(Object entity) {
+        float yawRad = readFloat(entity, YAW_FIELDS) * ((float) Math.PI / 180.0F);
+        double boostX = (double) (-Math.sin(yawRad) * 0.2F);
+        double boostZ = (double) (Math.cos(yawRad) * 0.2F);
+        writeDouble(entity, MOTION_X_FIELDS, readDouble(entity, MOTION_X_FIELDS) + boostX);
+        writeDouble(entity, MOTION_Z_FIELDS, readDouble(entity, MOTION_Z_FIELDS) + boostZ);
+    }
+
     private static Object readObject(Object target, String[] names) {
-        Field field = findField(target.getClass(), names);
+        Field field = findField(target.getClass(), names, Object.class);
         if (field == null) {
             return null;
         }
@@ -162,7 +171,7 @@ public final class OmniLiteHooks {
 
     private static Object readMovementInputObject(Object entity) {
         Object known = readObject(entity, INPUT_FIELDS);
-        if (known != null) {
+        if (known != null && looksLikeMovementInput(known.getClass())) {
             return known;
         }
 
@@ -237,8 +246,8 @@ public final class OmniLiteHooks {
         String[] forwardNames = forwardFieldName == null
                 ? FORWARD_FIELDS
                 : prepend(forwardFieldName, FORWARD_FIELDS);
-        Field forwardField = findField(input.getClass(), forwardNames);
-        Field strafeField = findField(input.getClass(), STRAFE_FIELDS);
+        Field forwardField = findField(input.getClass(), forwardNames, Float.TYPE);
+        Field strafeField = findField(input.getClass(), STRAFE_FIELDS, Float.TYPE);
 
         if (forwardField != null && (strafeField == null || sameField(forwardField, strafeField))) {
             strafeField = findOtherFloatField(input.getClass(), forwardField);
@@ -260,7 +269,7 @@ public final class OmniLiteHooks {
     }
 
     private static float readFloat(Object target, String[] names) {
-        Field field = findField(target.getClass(), names);
+        Field field = findField(target.getClass(), names, Float.TYPE);
         return readFloat(target, field);
     }
 
@@ -276,7 +285,7 @@ public final class OmniLiteHooks {
     }
 
     private static double readDouble(Object target, String[] names) {
-        Field field = findField(target.getClass(), names);
+        Field field = findField(target.getClass(), names, Double.TYPE);
         if (field == null) {
             return 0.0D;
         }
@@ -288,7 +297,7 @@ public final class OmniLiteHooks {
     }
 
     private static void writeDouble(Object target, String[] names, double value) {
-        Field field = findField(target.getClass(), names);
+        Field field = findField(target.getClass(), names, Double.TYPE);
         if (field == null) {
             return;
         }
@@ -299,14 +308,14 @@ public final class OmniLiteHooks {
         }
     }
 
-    private static Field findField(Class<?> type, String[] names) {
-        String key = type.getName() + ":" + firstUsableName(names);
+    private static Field findField(Class<?> type, String[] names, Class<?> expectedType) {
+        String key = type.getName() + ":" + expectedType.getName() + ":" + firstUsableName(names);
         Field cached = FIELDS.get(key);
         if (cached != null) {
             return cached;
         }
 
-        Field found = searchField(type, names);
+        Field found = searchField(type, names, expectedType);
         if (found != null) {
             FIELDS.put(key, found);
         }
@@ -324,11 +333,14 @@ public final class OmniLiteHooks {
         return "<unnamed>";
     }
 
-    private static Field searchField(Class<?> type, String[] names) {
+    private static Field searchField(Class<?> type, String[] names, Class<?> expectedType) {
         for (Class<?> cursor = type; cursor != null; cursor = cursor.getSuperclass()) {
             for (String name : names) {
                 try {
                     Field field = cursor.getDeclaredField(name);
+                    if (expectedType == Object.class ? field.getType().isPrimitive() : field.getType() != expectedType) {
+                        continue;
+                    }
                     field.setAccessible(true);
                     return field;
                 } catch (NoSuchFieldException ex) {
@@ -343,6 +355,24 @@ public final class OmniLiteHooks {
         String[] names = new String[rest.length + 1];
         names[0] = first;
         System.arraycopy(rest, 0, names, 1, rest.length);
+        return names;
+    }
+
+    private static String[] names(String... values) {
+        int count = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] != null && !values[i].isEmpty()) {
+                count++;
+            }
+        }
+
+        String[] names = new String[count];
+        int index = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] != null && !values[i].isEmpty()) {
+                names[index++] = values[i];
+            }
+        }
         return names;
     }
 

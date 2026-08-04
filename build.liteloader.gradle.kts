@@ -35,15 +35,21 @@ repositories {
     mavenCentral()
     maven("https://libraries.minecraft.net/")
     maven("https://repo.spongepowered.org/maven/")
-    maven("http://repo.mumfrey.com/content/repositories/snapshots/") {
-        isAllowInsecureProtocol = true
+    maven("https://dl.liteloader.com/versions/") {
+        metadataSources {
+            artifact()
+        }
     }
+    maven("https://repo.mumfrey.com/content/repositories/liteloader/")
+    maven("https://repo.mumfrey.com/content/repositories/snapshots/")
 }
 
 dependencies {
-    compileOnly("com.mumfrey:liteloader:${prop("deps.liteloader")}")
-    compileOnly("net.minecraft:launchwrapper:1.12")
-    compileOnly("org.ow2.asm:asm-debug-all:5.2")
+    compileOnly("com.mumfrey:liteloader:${prop("deps.liteloader")}") {
+        isTransitive = false
+    }
+    compileOnly("net.minecraft:launchwrapper:${prop("deps.launchwrapper")}")
+    compileOnly("org.ow2.asm:asm-all:${prop("deps.asm")}")
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -62,13 +68,18 @@ tasks.processResources {
         "minecraft_version" to minecraft
     )
     inputs.properties(props)
-    filesMatching("litemod.json") {
+    filesMatching(listOf("litemod.json", "assets/omni/liteloader.properties")) {
         expand(props)
     }
 }
 
 tasks.named<Jar>("jar") {
     archiveExtension.set("litemod")
+    if (minecraft == "1.6.4") {
+        manifest {
+            attributes["TweakClass"] = "io.github.avacadowizard120.omni.liteloader.OmniLiteTweaker"
+        }
+    }
 }
 
 tasks.register<Copy>("buildAndCollect") {
