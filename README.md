@@ -4,13 +4,13 @@ A client-side omni-directional sprint mod built with Stonecutter.
 
 ## Supported targets
 
-- Fabric for Minecraft 1.14.4 through 1.21.11, and 26.1 through 26.2
+- Fabric for Minecraft 1.14.4 through 1.21.11, and 26.1 through 26.3
 - Forge for Minecraft 1.8, 1.8.8, 1.8.9, 1.9, 1.9.4, 1.10, 1.10.2,
   1.11, 1.11.2, 1.12 through 1.12.2, 1.14.4, 1.15 through 1.15.2,
   1.16.2 through 1.16.5, 1.17.1, 1.18 through 1.20.4, 1.20.6 through
-  1.21.1, 1.21.3 through 1.21.11, and 26.1.1 through 26.2
-- Quilt for Minecraft 1.20.1, 1.20.4, 1.21.1 through 1.21.11, and 26.1 through 26.2
-- NeoForge for Minecraft 1.20.4, 1.21.1 through 1.21.11, and 26.1 through 26.2
+  1.21.1, 1.21.3 through 1.21.11, and 26.1.1 through 26.3
+- Quilt for Minecraft 1.20.1, 1.20.4, 1.21.1 through 1.21.11, and 26.1 through 26.3
+- NeoForge for Minecraft 1.20.4, 1.21.1 through 1.21.11, and 26.1 through 26.3
 - LiteLoader for Minecraft 1.6.4, 1.7.2, 1.7.10, 1.8, 1.8.9, 1.9, 1.9.4,
   1.10, 1.10.2, 1.11, 1.11.2, and 1.12 through 1.12.2
 - Legacy Fabric for all 35 buildable releases from Minecraft 1.3.1 through
