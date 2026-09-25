@@ -288,7 +288,7 @@ def metadata_for(item, config, project_id):
         "file_parts": ["file"],
         "primary_file": "file",
     }
-    environment = config.get("environment")
+    environment = config.get("environment", "client_and_server")
     if environment:
         metadata["environment"] = environment
     requested_status = config.get("requested_status")

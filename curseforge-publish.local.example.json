@@ -3,6 +3,7 @@
   "token_env": "CURSEFORGE_API_TOKEN",
   "release_type": "release",
   "changelog_type": "markdown",
+  "environments": ["Client", "Server"],
   "skip_existing": true,
   "skip_existing_pairs": false,
   "changelog": "Adds support for more Minecraft versions and mod loaders.",

@@ -4,7 +4,7 @@
   "version_type": "release",
   "requested_status": "listed",
   "featured": false,
-  "environment": "client_only",
+  "environment": "client_and_server",
   "skip_existing": true,
   "skip_existing_pairs": false,
   "changelog": "Adds support for more Minecraft versions and mod loaders.",

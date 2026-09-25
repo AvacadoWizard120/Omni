@@ -243,10 +243,33 @@ def find_version_id(name, versions, candidates):
 def resolve_ids(plan, config, token):
     game_overrides = {str(k): int(v) for k, v in config.get("game_version_ids", {}).items()}
     loader_overrides = {str(k).lower(): int(v) for k, v in config.get("loader_ids", {}).items()}
+    environment_overrides = {
+        normalize_name(k): int(v) for k, v in config.get("environment_ids", {}).items()
+    }
     core_minecraft_versions = fetch_core_minecraft_versions()
     legacy_versions = fetch_legacy_versions(token) if token else {}
 
     errors = []
+    environment_names = config.get("environments", ["Client", "Server"])
+    if isinstance(environment_names, str):
+        environment_names = [environment_names]
+    environment_ids = []
+    for environment_name in environment_names:
+        environment_name = str(environment_name)
+        environment_id = environment_overrides.get(normalize_name(environment_name))
+        if environment_id is None:
+            environment_id = find_version_id(
+                environment_name,
+                legacy_versions,
+                [environment_name],
+            )
+        if environment_id is None:
+            errors.append(f"could not resolve environment tag {environment_name!r}")
+        else:
+            environment_ids.append(environment_id)
+    if not environment_names:
+        errors.append("at least one CurseForge environment tag is required")
+
     for item in plan:
         minecraft = item["minecraft"]
         loader = item["loader"]
@@ -270,7 +293,9 @@ def resolve_ids(plan, config, token):
                 [loader_display, loader, loader_display.replace("Neo", "Neo ")],
             )
 
-        item["curseforge_game_version_ids"] = [x for x in [minecraft_id, loader_id] if x is not None]
+        item["curseforge_game_version_ids"] = [
+            x for x in [minecraft_id, loader_id, *environment_ids] if x is not None
+        ]
         if minecraft_id is None:
             errors.append(f"{item['file_name']}: could not resolve Minecraft version tag {minecraft!r}")
         if loader_id is None and loader not in LOADERS_WITHOUT_CURSEFORGE_TAG:
@@ -461,7 +486,11 @@ def main():
         if errors:
             for error in errors:
                 print(error, file=sys.stderr)
-            print("Add explicit game_version_ids/loader_ids to the local config if CurseForge uses unexpected tag names.", file=sys.stderr)
+            print(
+                "Add explicit game_version_ids/loader_ids/environment_ids to the local config "
+                "if CurseForge uses unexpected tag names.",
+                file=sys.stderr,
+            )
             return 1
 
     PLAN_PATH.parent.mkdir(parents=True, exist_ok=True)
